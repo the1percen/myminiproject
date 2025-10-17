@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="csrf-token" content="{{ csrf_token }}">
+  <title>AI Workout Assistant</title>
+  <style>
+    body {
+      font-family: "Poppins", sans-serif;
+      background: #f4f6f8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 15px;
+      color: #222;
+    }
+
+    .chat-container {
+      width: 100%;
+      max-width: 450px;
+      background: #fff;
+      border-radius: 20px;
+      box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .chat-box {
+      flex-grow: 1;
+      overflow-y: auto;
+      max-height: 400px;
+      padding: 10px;
+      border-radius: 12px;
+      background-color: #fafafa;
+      scroll-behavior: smooth;
+    }
+
+    .message {
+      margin: 8px 0;
+      padding: 10px 15px;
+      border-radius: 12px;
+      max-width: 80%;
+      line-height: 1.4;
+    }
+
+    .user {
+      align-self: flex-end;
+      background-color: #007bff;
+      color: #fff;
+      border-bottom-right-radius: 0;
+    }
+
+    .bot {
+      align-self: flex-start;
+      background-color: #e4e6eb;
+      color: #000;
+      border-bottom-left-radius: 0;
+    }
+
+    .input-area {
+      display: flex;
+      margin-top: 15px;
+    }
+
+    .input-area input {
+      flex: 1;
+      padding: 12px;
+      border-radius: 10px;
+      border: 1px solid #ccc;
+      font-size: 14px;
+    }
+
+    .input-area button {
+      padding: 12px 20px;
+      margin-left: 10px;
+      border: none;
+      border-radius: 10px;
+      background: #007bff;
+      color: #fff;
+      cursor: pointer;
+      transition: 0.2s;
+    }
+
+    .input-area button:hover {
+      background: #0056b3;
+    }
+  </style>
+</head>
+<body>
+  <h2>💬 AI Workout Assistant</h2>
+  <div class="chat-container">
+    <div class="chat-box" id="chatBox">
+      <div class="message bot">Hey there! 💪 How can I assist you with your workout today?</div>
+    </div>
+    <div class="input-area">
+      <input type="text" id="userInput" placeholder="Ask about your workout plan..." />
+      <button onclick="sendMessage()">Send</button>
+    </div>
+  </div>
+
+<script>
+  async function sendMessage() {
+    const input = document.getElementById('userInput');
+    const message = input.value.trim();
+    if (message === "") return;
+
+    // Display user message
+    const chatBox = document.getElementById('chatBox');
+    chatBox.innerHTML += `<div class="message user">${message}</div>`;
+    input.value = "";
+    chatBox.scrollTop = chatBox.scrollHeight;
+
+    try {
+      // Send to backend
+      const response = await fetch("/chatbot/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "X-CSRFToken": getCookie("csrftoken")
+        },
+        body: JSON.stringify({ message })
+      });
+
+      const data = await response.json();
+
+      // ✅ Use "data.reply" instead of "data.response"
+      if (data.reply) {
+        chatBox.innerHTML += `<div class="message bot">${data.reply}</div>`;
+      } else {
+        chatBox.innerHTML += `<div class="message bot">Sorry, I didn’t get that.</div>`;
+      }
+
+      chatBox.scrollTop = chatBox.scrollHeight;
+    } catch (error) {
+      console.error("Error:", error);
+      chatBox.innerHTML += `<div class="message bot">⚠️ Something went wrong. Try again.</div>`;
+    }
+  }
+
+  // Django CSRF token helper
+  function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+      const cookies = document.cookie.split(';');
+      for (let cookie of cookies) {
+        cookie = cookie.trim();
+        if (cookie.startsWith(name + '=')) {
+          cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+          break;
+        }
+      }
+    }
+    return cookieValue;
+  }
+</script>
+
+</body>
+</html>
