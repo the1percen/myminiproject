@@ -2,10 +2,10 @@
 
 Points our project to our workout application.
 """
-from django.conf.urls import url, include
 from django.urls import path, include
+from django.contrib import admin
 
 urlpatterns = [
-    url(r'^', include("apps.workout.urls")),
+    path('admin/', admin.site.urls),
     path('', include('apps.workout.urls')),
 ]

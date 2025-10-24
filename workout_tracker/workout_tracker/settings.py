@@ -27,11 +27,13 @@ DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
+APPEND_SLASH = True
 
 # Application definition
 
 INSTALLED_APPS = [
-    'apps.workout',
+    'jazzmin',
+    'apps.workout.apps.WorkoutConfig',  # ✅ correct path to config
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -124,3 +126,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [BASE_DIR / "static"]
+
+JAZZMIN_SETTINGS = {
+    "site_title": "Workout Tracker Admin",
+    "site_header": "Workout Tracker",
+    "welcome_sign": "Welcome to Workout Tracker Admin",
+    "site_brand": "Workout AI Dashboard",
+    "show_ui_builder": True,
+    "related_modal_active": True,
+    "topmenu_links": [
+        {"name": "Home", "url": "/", "permissions": ["auth.view_user"]},
+        {"app": "workout"},
+        {"name": "Chatbot 🤖", "url": "/chatbot/", "new_window": False},
+    ],
+}

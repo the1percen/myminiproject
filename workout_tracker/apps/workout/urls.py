@@ -2,23 +2,22 @@
 
 Our workout application URLs.
 """
-from django.conf.urls import url
-from django.urls import path
+from django.urls import path, re_path
 from . import views
 
 urlpatterns = [
-    url(r'^$', views.login), # index / login page
-    url(r'^user/register$', views.register), # get register page / register user
-    url(r'^user/login$', views.login), # logs in existing user
-    url(r'^user/logout$', views.logout), # destroys user session
-    url(r'^dashboard$', views.dashboard), # get dashboard
-    url(r'^workout$', views.new_workout), # get workout page / add workout
-    url(r'^workout/(?P<id>\d*)$', views.workout), # get workout / update workout
-    url(r'^workout/(?P<id>\d*)/exercise$', views.exercise), # add exercise
-    url(r'^workout/(?P<id>\d*)/complete$', views.complete_workout), # complete workout
-    url(r'^workout/(?P<id>\d*)/edit$', views.edit_workout), # edit workout
-    url(r'^workout/(?P<id>\d*)/delete$', views.delete_workout), # delete workout
-    url(r'^workouts$', views.all_workouts), # get all workouts
-    url(r'^legal/tos$', views.tos), # get terms of service
-    path('chatbot/', views.chatbot, name='chatbot'),
+    path('', views.login, name='login'),  # index / login page
+    path('user/register/', views.register, name='register'),  # register page
+    path('user/login/', views.login, name='user_login'),  # login user
+    path('user/logout/', views.logout, name='logout'),  # logout
+    path('dashboard/', views.dashboard, name='dashboard'),  # dashboard
+    path('workout/', views.new_workout, name='new_workout'),  # new workout page
+    re_path(r'^workout/(?P<id>\d+)/$', views.workout, name='workout'),  # get/update workout
+    re_path(r'^workout/(?P<id>\d+)/exercise/$', views.exercise, name='exercise'),  # add exercise
+    re_path(r'^workout/(?P<id>\d+)/complete/$', views.complete_workout, name='complete_workout'),  # complete workout
+    re_path(r'^workout/(?P<id>\d+)/edit/$', views.edit_workout, name='edit_workout'),  # edit workout
+    re_path(r'^workout/(?P<id>\d+)/delete/$', views.delete_workout, name='delete_workout'),  # delete workout
+    path('workouts/', views.all_workouts, name='all_workouts'),  # all workouts
+    path('legal/tos/', views.tos, name='tos'),  # terms of service
+    path('chatbot/', views.chatbot, name='chatbot'),  # chatbot page
 ]

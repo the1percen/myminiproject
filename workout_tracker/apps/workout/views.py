@@ -2,15 +2,18 @@ from django.shortcuts import render, redirect
 from django.contrib import messages # access django's `messages` module.
 from .models import User, Workout, Exercise
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-import openai
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
 from dotenv import load_dotenv
 import os
+from django.contrib import admin
+from .models import User, Workout, Exercise
+from decouple import config
+import google.generativeai as genai
 
 load_dotenv()
-openai.api_key = os.getenv("OPENAI_API_KEY")
+genai.configure(api_key=config("GEMINI_API_KEY"))
 
 
 def login(request):
@@ -58,7 +61,7 @@ def register(request):
                 for error in validated["errors"]:
                     messages.error(request, error, extra_tags='registration')
                 # Reload register page:
-                return redirect("/user/register")
+                return redirect("/user/register/")
         except KeyError:
             # If validation successful, set session and load dashboard based on user level:
             print("User passed validation and has been created.")
@@ -374,19 +377,33 @@ def chatbot(request):
             data = json.loads(request.body)
             user_message = data.get("message", "")
 
-            # Call OpenAI GPT
-            response = openai.chat.completions.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a helpful fitness chatbot."},
-                    {"role": "user", "content": user_message},
-                ],
-            )
+            # Create Gemini model
+            model = genai.GenerativeModel("gemini-2.0-flash")
 
-            bot_reply = response.choices[0].message.content.strip()
+            # Generate AI response
+            response = model.generate_content(f"You are a helpful fitness chatbot. {user_message}")
+            
+            bot_reply = response.text.strip()
             return JsonResponse({"reply": bot_reply})
 
         except Exception as e:
             return JsonResponse({"reply": f"Error: {str(e)}"})
 
     return render(request, "workout/chatbot.html")
+
+class WorkoutAdmin(admin.ModelAdmin):
+    list_display = ('name', 'user', 'completed', 'created_at', 'ai_status')
+    readonly_fields = ('ai_advice', 'ai_plan')
+    actions = ['generate_ai_for_selected']
+
+    def ai_status(self, obj):
+        return "✅ Yes" if obj.ai_advice else "❌ No"
+    ai_status.short_description = "AI Advice Generated"
+
+    def generate_ai_for_selected(self, request, queryset):
+        """Custom admin action: generate AI advice and plans"""
+        for workout in queryset:
+            workout.generate_ai_advice()
+            workout.generate_ai_plan()
+        self.message_user(request, "AI advice and plans generated successfully ✅")
+    generate_ai_for_selected.short_description = "Generate AI Advice & Plan for selected workouts"

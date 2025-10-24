@@ -2,6 +2,9 @@ from django.db import models
 import re # regex for email validation
 import bcrypt # bcrypt for password encryption/decryption
 from decimal import * # for decimal number purposes
+from decouple import config
+import google.generativeai as genai
+
 
 class UserManager(models.Manager):
     """Additional instance method functions for `User`"""
@@ -419,25 +422,59 @@ class User(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
     objects = UserManager() # Adds additional instance methods to `User`
 
-class Workout(models.Model):
-    """Creates instances of `Workout`."""
-
-    name = models.CharField(max_length=50)
-    description = models.CharField(max_length=150)
-    completed = models.BooleanField(default=False)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, default=None)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
-    objects = WorkoutManager()
-
 class Exercise(models.Model):
-    """Creates instances of `Exercise`."""
-
     name = models.CharField(max_length=50)
     weight = models.DecimalField(max_digits=999, decimal_places=1)
     repetitions = models.DecimalField(max_digits=999, decimal_places=1)
-    category = models.CharField(max_length=50, default="Strength Training") # Add more categories in the future: ['Strength Training', 'Endurance Training', 'Balance', 'Flexibility']
-    workout = models.ForeignKey(Workout, on_delete=models.CASCADE, default=None)
+    category = models.CharField(max_length=50, default="Strength Training")
+    workout = models.ForeignKey("workout.Workout", on_delete=models.CASCADE, default=None)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = ExerciseManager()
+
+class Workout(models.Model):
+    name = models.CharField(max_length=50)
+    description = models.CharField(max_length=150)
+    completed = models.BooleanField(default=False)
+    user = models.ForeignKey('User', on_delete=models.CASCADE, default=None)
+    ai_advice = models.TextField(blank=True, null=True)
+    ai_plan = models.TextField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    def generate_ai_advice(self):
+        """Ask OpenAI for workout advice based on workout name/description"""
+        prompt = f"Give professional fitness advice for this workout: {self.name} - {self.description}"
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a professional fitness trainer."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            self.ai_advice = response["choices"][0]["message"]["content"]
+            self.save()
+            return self.ai_advice
+        except Exception as e:
+            return f"AI Error: {e}"
+
+    def generate_ai_plan(self):
+        """Generate 3-day personalized workout plan"""
+        prompt = f"Create a 3-day workout plan for {self.name}. Focus on form and balance."
+        try:
+            response = openai.ChatCompletion.create(
+                model="gpt-3.5-turbo",
+                messages=[
+                    {"role": "system", "content": "You are a certified personal trainer."},
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            self.ai_plan = response["choices"][0]["message"]["content"]
+            self.save()
+            return self.ai_plan
+        except Exception as e:
+            return f"AI Error: {e}"
+
+    def __str__(self):
+        return self.name
