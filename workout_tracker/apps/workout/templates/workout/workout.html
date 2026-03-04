@@ -1,195 +1,634 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-  <meta charset="utf-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>FitnessTracker</title>
-  <meta name="description" content="">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="robots" content="all,follow">
-  <!-- Load Access to Django Static Files -->
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FitnessTracker - {{ workout.name }}</title>
   {% load static %}
-  <!-- Fav Icon -->
-  <!--[if IE]><link rel="shortcut icon" href="{% static 'workout/images/fav.png' }"><![endif]-->
   <link rel="icon" href="{% static 'workout/images/fav.png' %}">
-  <!-- Bootstrap CSS-->
-  <link rel="stylesheet" href="{% static 'workout/css/bootstrap.min.css' %}">
-  <!-- Font Awesome CSS-->
-  <link rel="stylesheet" href="{% static 'workout/css/font-awesome.min.css' %}">
-  <!-- Custom Font Icons CSS-->
-  <link rel="stylesheet" href="{% static 'workout/css/font.css' %}">
-  <!-- Google fonts - Muli-->
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Muli:300,400,700">
-  <!-- theme stylesheet-->
-  <link rel="stylesheet" href="{% static 'workout/css/style.red.css' %}" id="theme-stylesheet">
-  <!-- Custom stylesheet - for your changes-->
-  <link rel="stylesheet" href="{% static 'workout/css/custom.css' %}">
-  <!-- Tweaks for older IEs-->
-  <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]-->
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="{% static 'workout/css/theme.css' %}">
+  <style>
+    .workout-header-card {
+      background: linear-gradient(135deg, rgba(102, 126, 234, 0.10), rgba(118, 75, 162, 0.08));
+      border: 1px solid rgba(102, 126, 234, 0.2);
+      border-radius: 16px;
+      padding: 28px;
+      margin-bottom: 24px;
+    }
+
+    .workout-header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      gap: 16px;
+      flex-wrap: wrap;
+      margin-bottom: 16px;
+    }
+
+    .workout-title {
+      font-size: 28px;
+      font-weight: 800;
+      color: #fff;
+      margin-bottom: 4px;
+    }
+
+    .workout-meta {
+      font-size: 13px;
+      color: #666;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .workout-meta span {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    /* Timer */
+    .timer-widget {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 14px 20px;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .timer-display {
+      font-size: 24px;
+      font-weight: 800;
+      color: #fff;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: 2px;
+    }
+
+    .timer-btn {
+      width: 34px;
+      height: 34px;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .timer-btn-start {
+      background: rgba(74, 222, 128, 0.15);
+      color: #4ade80;
+    }
+
+    .timer-btn-start:hover {
+      background: rgba(74, 222, 128, 0.25);
+    }
+
+    .timer-btn-reset {
+      background: rgba(255, 255, 255, 0.06);
+      color: #888;
+    }
+
+    .timer-btn-reset:hover {
+      background: rgba(255, 255, 255, 0.1);
+      color: #ccc;
+    }
+
+    .timer-label {
+      font-size: 11px;
+      color: #555;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    /* Exercise Form */
+    .exercise-form-card {
+      background: rgba(255, 255, 255, 0.02);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 24px;
+    }
+
+    .exercise-form-card h3 {
+      font-size: 16px;
+      font-weight: 700;
+      color: #fff;
+      margin-bottom: 16px;
+    }
+
+    .exercise-form-row {
+      display: grid;
+      grid-template-columns: 2fr 1fr 1fr auto;
+      gap: 12px;
+      align-items: end;
+    }
+
+    @media (max-width: 768px) {
+      .exercise-form-row {
+        grid-template-columns: 1fr 1fr;
+      }
+    }
+
+    /* AI Section */
+    .ai-section {
+      background: linear-gradient(135deg, rgba(16, 16, 36, 0.8), rgba(22, 22, 50, 0.8));
+      border: 1px solid rgba(102, 126, 234, 0.18);
+      border-radius: 16px;
+      padding: 24px;
+      margin-top: 24px;
+    }
+
+    .ai-section-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 16px;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .ai-section-header h3 {
+      font-size: 18px;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .ai-btn-row {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .ai-loading {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      color: #667eea;
+      font-size: 13px;
+      margin-top: 14px;
+    }
+
+    .ai-loading.active {
+      display: flex;
+    }
+
+    .spinner {
+      width: 18px;
+      height: 18px;
+      border: 2px solid rgba(102, 126, 234, 0.2);
+      border-top-color: #667eea;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .ai-result {
+      display: none;
+      background: rgba(0, 0, 0, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.06);
+      border-radius: 12px;
+      padding: 20px;
+      margin-top: 14px;
+      font-size: 14px;
+      color: #bbb;
+      line-height: 1.8;
+    }
+
+    .ai-result.visible {
+      display: block;
+      animation: fadeUp 0.4s ease;
+    }
+
+    @keyframes fadeUp {
+      from {
+        opacity: 0;
+        transform: translateY(8px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .ai-result h4,
+    .ai-result h5 {
+      color: #a78bfa;
+      margin: 12px 0 6px;
+    }
+
+    .ai-result strong {
+      color: #e0e0e0;
+    }
+
+    .ai-result ul,
+    .ai-result ol {
+      padding-left: 20px;
+      margin: 8px 0;
+    }
+
+    .ai-result li {
+      margin: 5px 0;
+    }
+
+    /* Delete exercise button */
+    .del-exercise-btn {
+      background: transparent;
+      border: none;
+      color: #ef4444;
+      cursor: pointer;
+      padding: 6px 10px;
+      border-radius: 8px;
+      font-size: 13px;
+      transition: all 0.2s;
+    }
+
+    .del-exercise-btn:hover {
+      background: rgba(239, 68, 68, 0.1);
+    }
+
+    .exercise-count-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 10px;
+      border-radius: 20px;
+      background: rgba(102, 126, 234, 0.12);
+      color: #667eea;
+      font-size: 12px;
+      font-weight: 600;
+    }
+  </style>
 </head>
 
 <body>
-  <header class="header">
-    <nav class="navbar navbar-expand-lg">
-      <div class="search-panel">
-        <div class="search-inner d-flex align-items-center justify-content-center">
-          <div class="close-btn">Close <i class="fa fa-close"></i></div>
-          <form id="searchForm" action="#">
-            <div class="form-group">
-              <input type="search" name="search" placeholder="What are you searching for...">
-              <button type="submit" class="submit">Search</button>
+  <div class="app-shell">
+    <aside class="app-sidebar">
+      <div class="sidebar-brand">
+        <div class="brand-icon">🏋️</div>
+        <div>
+          <div class="brand-text-main">FitnessTracker</div>
+          <div class="brand-text-sub">AI Workout Platform</div>
+        </div>
+      </div>
+      <div class="sidebar-user">
+        <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
+        <div>
+          <div class="user-name">{{ user.username }}</div>
+          <div class="user-level">⭐ {{ user.level_name }}</div>
+        </div>
+      </div>
+      <div class="sidebar-nav">
+        <div class="nav-section-label">Main</div>
+        <a href="/dashboard/" class="nav-link-item"><i class="fas fa-home"></i> Dashboard</a>
+        <a href="/workout/" class="nav-link-item"><i class="fas fa-plus-circle"></i> New Workout</a>
+        <a href="/workouts/" class="nav-link-item active"><i class="fas fa-dumbbell"></i> All Workouts</a>
+        <div class="nav-section-label" style="margin-top:12px">AI Tools</div>
+        <a href="/chatbot/" class="nav-link-item"><i class="fas fa-robot"></i> FitBot AI</a>
+      </div>
+      <div class="sidebar-footer">
+        <a href="/user/logout/" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+      </div>
+    </aside>
+
+    <main class="app-content">
+      <div class="app-topbar">
+        <div>
+          <div class="page-title">{{ workout.name }}</div>
+          <div class="page-subtitle">Workout Details</div>
+        </div>
+        <div class="topbar-actions">
+          <a href="/workouts/" class="btn-outline btn-sm"><i class="fas fa-arrow-left"></i> All Workouts</a>
+          <a href="/workout/{{ workout.id }}/edit/" class="btn-outline btn-sm"><i class="fas fa-edit"></i> Edit</a>
+          {% if not workout.completed %}
+          <form action="/workout/{{ workout.id }}/complete/" method="POST" style="margin:0">
+            {% csrf_token %}
+            <button type="submit" class="btn-success-outline btn-sm">
+              <i class="fas fa-check"></i> Complete
+            </button>
+          </form>
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="content-area">
+        <!-- Workout Header Card -->
+        <div class="workout-header-card">
+          <div class="workout-header-top">
+            <div>
+              <div class="workout-title">{{ workout.name }}</div>
+              <div class="workout-meta">
+                <span><i class="fas fa-calendar"></i> {{ workout.created_at|date:"M d, Y" }}</span>
+                <span><i class="fas fa-clock"></i> Updated {{ workout.updated_at|timesince }} ago</span>
+                {% if workout.completed %}
+                <span class="badge-completed">✅ Completed</span>
+                {% else %}
+                <span class="badge-active">🔄 In Progress</span>
+                {% endif %}
+                {% if exercises %}
+                <span class="exercise-count-badge"><i class="fas fa-dumbbell"></i> {{ exercises|length }}
+                  exercises</span>
+                {% endif %}
+              </div>
+            </div>
+            <!-- Workout Timer -->
+            {% if not workout.completed %}
+            <div class="timer-widget">
+              <div>
+                <div class="timer-label">Workout Timer</div>
+                <div class="timer-display" id="timerDisplay">00:00:00</div>
+              </div>
+              <button class="timer-btn timer-btn-start" id="timerToggle" onclick="toggleTimer()" title="Start/Pause">
+                <i class="fas fa-play" id="timerIcon"></i>
+              </button>
+              <button class="timer-btn timer-btn-reset" onclick="resetTimer()" title="Reset">
+                <i class="fas fa-undo"></i>
+              </button>
+            </div>
+            {% endif %}
+          </div>
+          {% if workout.description %}
+          <p style="color:#888; font-size:14px; margin:0; line-height:1.6">{{ workout.description }}</p>
+          {% endif %}
+        </div>
+
+        <!-- Add Exercise Form (only if not completed) -->
+        {% if not workout.completed %}
+        <div class="exercise-form-card">
+          <h3><i class="fas fa-plus-circle" style="color:#667eea;margin-right:8px"></i>Add Exercise</h3>
+
+          {% if messages %}
+          {% for message in messages %}
+          {% if message.tags == "exercise error" %}
+          <div class="ft-alert ft-alert-danger"><i class="fas fa-exclamation-circle"></i> {{ message }}</div>
+          {% endif %}
+          {% endfor %}
+          {% endif %}
+
+          <form id="exercise-form" action="/workout/{{ workout.id }}/exercise/" method="POST">
+            {% csrf_token %}
+            <div class="exercise-form-row">
+              <div class="ft-form-group" style="margin:0">
+                <label class="ft-label">Exercise Name</label>
+                <input id="name" type="text" name="name" required class="ft-input"
+                  placeholder="e.g. Bench Press, Squat…">
+              </div>
+              <div class="ft-form-group" style="margin:0">
+                <label class="ft-label">Weight (lbs)</label>
+                <input id="weight" type="number" name="weight" step="0.5" class="ft-input" placeholder="135">
+              </div>
+              <div class="ft-form-group" style="margin:0">
+                <label class="ft-label">Reps</label>
+                <input id="repetitions" type="number" name="repetitions" class="ft-input" placeholder="10">
+              </div>
+              <div style="padding-bottom: 0;">
+                <button id="add-exercise-btn" type="submit" class="btn-grad" style="height:46px; white-space:nowrap">
+                  <i class="fas fa-plus"></i> Add
+                </button>
+              </div>
             </div>
           </form>
         </div>
-      </div>
-      <div class="container-fluid d-flex align-items-center justify-content-between ">
-        <div class="navbar-header">
-          <a href="/dashboard" class="navbar-brand">
-            <div class="brand-text brand-big visible text-uppercase"><strong class="text-primary">Fitness</strong><strong>Tracker</strong></div>
-            <div class="brand-text brand-sm"><strong class="text-primary">F</strong><strong>T</strong></div>
-          </a>
-          <button class="sidebar-toggle"><i class="fa fa-long-arrow-left"></i></button>
-        </div>
-        <ul class="right-menu list-inline no-margin-bottom">
-          <li class="list-inline-item"><a href="#" class="search-open nav-link"><i class="icon-magnifying-glass-browser"></i></a></li>
-          <li class="list-inline-item logout"><a id="logout" href="/user/logout" class="nav-link">Logout <i class="icon-logout"></i></a></li>
-        </ul>
-      </div>
-    </nav>
-  </header>
-  <div class="d-flex align-items-stretch ">
-    <nav id="sidebar">
-      <div class="sidebar-header d-flex align-items-center ">
-        <img src="{% static 'workout/images/badges/badge_1.png' %}" alt="..." class="img-fluid rounded-circle avatar">
-        <!-- <div class="avatar"><img src="{% static 'workout/images/dumbbell.png' %}" alt="..." class="img-fluid rounded-circle"></div> -->
-        <div class="title">
-          <h1 class="h5">{{ user.username}}</h1>
-          <p>Newbie</p>
-        </div>
-      </div><span class="heading">Menu</span>
-      <ul class="list-unstyled">
-        <li><a href="/dashboard"><i class="icon-home"></i> Home</a></li>
-        <li class="active"><a href="/workout"><i class="fa fa-plus-square"></i> Workout</a></li>
-        <li> <a href="/workouts"><i class="fa fa-th-list"></i> View All </a></li>
-      </ul>
-    </nav>
-    <div class="page-content mb-5">
-      <div class="page-header">
-        <div class="container-fluid">
-          <h2 class="h5 no-margin-bottom">Workout</h2>
-        </div>
-      </div>
-      <section class="no-padding-bottom">
-        <div class="container-fluid">
-          <div class="row">
-            <div class="col-lg-12 text-light">
-              {% if workout.completed == False %}
-              <!-- End Workout -->
-              <form id="end-workout-form" action="/workout/{{ workout.id }}/complete" method="POST">
-                {% csrf_token %}
-                <!-- End Workout Button -->
-                <button id="end-workout" type="submit" class="btn btn-primary btn-lg float-right end-workout mb-4 ml-2">End Workout</button>
-              </form>
-              {% endif %}
-              <!-- Edit Workout Button -->
-              <a href="/workout/{{ workout.id }}/edit" class="btn btn-outline-info btn-lg float-right mb-4">Edit</a>
-              <!-- Workout Name -->
-              <h2 class="">{{ workout.name}}</h2>
-              <!-- Workout Subtitle -->
-              <small class="text-muted">{{ workout.created_at | date}}</small>
-              <!-- Workout Description -->
-              {% if workout.description %}
-              <p class="mt-5">{{ workout.description}}</p>
-              {% endif %}
-              <!-- Add Exercise -->
-              {% if workout.completed == False %}
-              <div class="card bg-dark add-exercise mb-5 mt-5" style="">
-                <div class="card-body">
-                  <form id="exercise-form" class="" action="/workout/{{ workout.id }}/exercise" method="POST">
+        {% endif %}
+
+        <!-- Exercises Table -->
+        {% if exercises %}
+        <div class="ft-card" style="padding: 0; overflow: hidden;">
+          <div
+            style="padding: 18px 22px; border-bottom: 1px solid rgba(255,255,255,0.05); display:flex; align-items:center; justify-content:space-between;">
+            <h3 style="font-size:16px; font-weight:700; color:#fff; margin:0">
+              <i class="fas fa-list" style="color:#667eea; margin-right:8px"></i>Exercises
+            </h3>
+            <span class="exercise-count-badge">{{ exercises|length }} logged</span>
+          </div>
+          <table class="ft-table">
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Exercise</th>
+                <th>Weight</th>
+                <th>Reps</th>
+                <th>Volume</th>
+                {% if not workout.completed %}<th>Action</th>{% endif %}
+              </tr>
+            </thead>
+            <tbody>
+              {% for exercise in exercises %}
+              <tr>
+                <td style="color:#555; font-size:13px;">{{ forloop.counter }}</td>
+                <td style="font-weight:600; color:#e0e0e0;">{{ exercise.name }}</td>
+                <td>{{ exercise.weight|floatformat }} <span style="color:#555;font-size:12px">lbs</span></td>
+                <td>{{ exercise.repetitions|floatformat }} <span style="color:#555;font-size:12px">reps</span></td>
+                <td style="color:#a78bfa; font-weight:600;">
+                  {% widthratio exercise.weight 1 exercise.repetitions %} <span
+                    style="color:#555;font-size:12px">lbs</span>
+                </td>
+                {% if not workout.completed %}
+                <td>
+                  <form action="/workout/{{ workout.id }}/exercise/" method="GET" style="margin:0; display:inline">
                     {% csrf_token %}
-                    <!-- Exercise Errors -->
-                    {% if messages %} {% for message in messages %} {% if message.tags == "exercise error" %}
-                    <div class="alert alert-danger alert-dismissable" role="alert">
-                      <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                      <strong>Error!</strong> {{ message }}
-                    </div>
-                    {% endif %} {% endfor %} {% endif %}
-                    <!-- Exercise Name -->
-                    <div class="form-row">
-                      <div class="form-group col-md-4">
-                        <input id="name" type="text" name="name" required class="input-material form-control-lg mr-4" placeholder="Name">
-                      </div>
-                      <!-- Exercise Weight -->
-                      <div class="form-group col-md-4">
-                        <input id="weight" type="text" name="weight" class="input-material form-control-lg mr-4" placeholder="Weight (lbs)">
-                      </div>
-                      <!-- Exercise Repititions -->
-                      <div class="form-group col-md-4">
-                        <input id="repetitions" type="text" name="repetitions" class="input-material form-control-lg mr-4" placeholder="Repetitions">
-                      </div>
-                    </div>
-                    <!-- Add Workout Button -->
-                    <input id="add" type="submit" value="Add Exercise" class="btn btn-secondary btn-lg mt-3 btn-block">
+                    <input type="hidden" name="exercise_id" value="{{ exercise.id }}">
+                    <input type="hidden" name="workout_id" value="{{ workout.id }}">
+                    <button type="submit" class="del-exercise-btn" title="Remove exercise"
+                      onclick="return confirm('Remove {{ exercise.name }} from this workout?')">
+                      <i class="fas fa-times"></i>
+                    </button>
                   </form>
-                </div>
-              </div>
-              {% endif %}
-              <hr>
-              <!-- Exercises Table -->
-              {% if exercises %}
-              <div id="exercise-wrapper" class="mb-5">
-                <!-- <h4 class="card-title">Exercise Data</h4> -->
-                <table class="table table-striped">
-                  <tbody>
-                    {% for exercise in exercises %}
-                    <tr>
-                      <th scope="row">{{ exercise.name }}</th>
-                      <td>{{ exercise.weight|floatformat }} lbs</td>
-                      <td>{{ exercise.repetitions|floatformat}} reps</td>
+                </td>
+                {% endif %}
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="ft-card" style="text-align:center; padding:40px 20px; margin-bottom:0">
+          <div style="font-size:36px; margin-bottom:12px">💪</div>
+          <p style="color:#666; font-size:14px;">No exercises added yet. Use the form above to add your first exercise!
+          </p>
+        </div>
+        {% endif %}
 
-                      {% if workout.completed == False %}
-                      <td>
-                        <form id="delete-exercise-form" action="/workout/{{ workout.id }}/exercise" method="GET" class="p-0">
-                          {% csrf_token %}
-                          <input type="hidden" id="exercise_id" name="exercise_id" value="{{ exercise.id }}">
-                          <input type="hidden" id="workout_id" name="workout_id" value="{{ workout.id }}">
-                          <button id="delete-exercise" type="submit" class="btn btn-link btn-lg p-0"><i class="fa fa-remove delete-exercise"></i></button>
-                        </form>
-                      </td>
-                      {% endif %}
-
-                    </tr>
-                    {% endfor %}
-                  </tbody>
-                </table>
-              </div>
-              {% endif %}
+        <!-- AI Section -->
+        <div class="ai-section">
+          <div class="ai-section-header">
+            <div>
+              <h3><i class="fas fa-robot" style="margin-right:8px; color:#667eea"></i>AI Workout Assistant</h3>
+              <p style="font-size:13px; color:#666; margin:4px 0 0">Powered by Google Gemini</p>
+            </div>
+            <div class="ai-btn-row">
+              <button class="btn-grad btn-sm" onclick="getAIAdvice({{ workout.id }})">
+                <i class="fas fa-lightbulb"></i> Get AI Advice
+              </button>
+              <button class="btn-outline btn-sm" onclick="getAIPlan({{ workout.id }})">
+                <i class="fas fa-calendar-alt"></i> 3-Day Plan
+              </button>
+              <a href="/chatbot/" class="btn-outline btn-sm">
+                <i class="fas fa-comments"></i> Chat with FitBot
+              </a>
             </div>
           </div>
-        </div>
-      </section>
-      <footer class="footer fixed-bottom no-margin-bottom">
-        <div class="footer__block block no-margin-bottom">
-          <div class="container-fluid text-center">
-            <p class="no-margin-bottom">2021 &copy; <a href="https://timknab.dev" target="_blank" class="sasquatch-footer-link">timknab.dev</a></p>
+
+          <!-- Advice Loading + Result -->
+          <div class="ai-loading" id="adviceLoading">
+            <div class="spinner"></div>
+            <span>Generating AI advice for your workout…</span>
+          </div>
+          <div class="ai-result" id="adviceResult">
+            {% if workout.ai_advice %}{{ workout.ai_advice }}{% endif %}
+          </div>
+
+          <!-- Plan Loading + Result -->
+          <div class="ai-loading" id="planLoading">
+            <div class="spinner"></div>
+            <span>Building your 3-day workout plan…</span>
+          </div>
+          <div class="ai-result" id="planResult">
+            {% if workout.ai_plan %}{{ workout.ai_plan }}{% endif %}
           </div>
         </div>
-      </footer>
-    </div>
+
+      </div><!-- end content-area -->
+
+      <div class="app-footer">2025 © FitnessTracker — AI-Powered Workout Management</div>
+    </main>
   </div>
-  <!-- Javascript files-->
-  <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js">
+
+  <script>
+    // ---- Timer ----
+    let timerInterval = null;
+    let timerSeconds = 0;
+    let timerRunning = false;
+
+    function pad(n) { return String(n).padStart(2, '0'); }
+
+    function updateTimerDisplay() {
+      const h = Math.floor(timerSeconds / 3600);
+      const m = Math.floor((timerSeconds % 3600) / 60);
+      const s = timerSeconds % 60;
+      document.getElementById('timerDisplay').textContent = `${pad(h)}:${pad(m)}:${pad(s)}`;
+    }
+
+    function toggleTimer() {
+      if (timerRunning) {
+        clearInterval(timerInterval);
+        timerRunning = false;
+        document.getElementById('timerIcon').className = 'fas fa-play';
+        document.getElementById('timerToggle').style.background = 'rgba(74,222,128,0.15)';
+      } else {
+        timerInterval = setInterval(() => { timerSeconds++; updateTimerDisplay(); }, 1000);
+        timerRunning = true;
+        document.getElementById('timerIcon').className = 'fas fa-pause';
+        document.getElementById('timerToggle').style.background = 'rgba(251,191,36,0.15)';
+        document.getElementById('timerToggle').style.color = '#fbbf24';
+      }
+    }
+
+    function resetTimer() {
+      clearInterval(timerInterval);
+      timerRunning = false;
+      timerSeconds = 0;
+      updateTimerDisplay();
+      document.getElementById('timerIcon').className = 'fas fa-play';
+      document.getElementById('timerToggle').style.background = 'rgba(74,222,128,0.15)';
+      document.getElementById('timerToggle').style.color = '#4ade80';
+    }
+
+    // ---- Show existing AI content on load ----
+    document.addEventListener('DOMContentLoaded', function () {
+      const ar = document.getElementById('adviceResult');
+      if (ar && ar.textContent.trim()) { ar.classList.add('visible'); }
+      const pr = document.getElementById('planResult');
+      if (pr && pr.textContent.trim()) { pr.classList.add('visible'); }
+    });
+
+    // ---- CSRF helper ----
+    function getCookie(name) {
+      let val = null;
+      if (document.cookie) {
+        for (let c of document.cookie.split(';')) {
+          c = c.trim();
+          if (c.startsWith(name + '=')) { val = decodeURIComponent(c.slice(name.length + 1)); break; }
+        }
+      }
+      return val;
+    }
+
+    // ---- AI text formatter ----
+    function formatAI(text) {
+      text = text.replace(/#{3}\s(.+)/g, '<h5>$1</h5>');
+      text = text.replace(/#{2}\s(.+)/g, '<h4>$1</h4>');
+      text = text.replace(/#{1}\s(.+)/g, '<h4>$1</h4>');
+      text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+      text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
+      text = text.replace(/\n/g, '<br>');
+      return text;
+    }
+
+    async function getAIAdvice(id) {
+      const loading = document.getElementById('adviceLoading');
+      const result = document.getElementById('adviceResult');
+      loading.classList.add('active');
+      result.classList.remove('visible');
+
+      try {
+        const res = await fetch(`/workout/${id}/ai-advice/`, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        loading.classList.remove('active');
+        result.innerHTML = data.advice ? formatAI(data.advice) : `<span style="color:#f87171">⚠️ ${data.error || 'Could not generate advice'}</span>`;
+        result.classList.add('visible');
+      } catch (e) {
+        loading.classList.remove('active');
+        result.innerHTML = '<span style="color:#f87171">⚠️ Connection error. Please try again.</span>';
+        result.classList.add('visible');
+      }
+    }
+
+    async function getAIPlan(id) {
+      const loading = document.getElementById('planLoading');
+      const result = document.getElementById('planResult');
+      loading.classList.add('active');
+      result.classList.remove('visible');
+
+      try {
+        const res = await fetch(`/workout/${id}/ai-plan/`, {
+          method: 'POST',
+          headers: { 'X-CSRFToken': getCookie('csrftoken'), 'Content-Type': 'application/json' }
+        });
+        const data = await res.json();
+        loading.classList.remove('active');
+        result.innerHTML = data.plan ? formatAI(data.plan) : `<span style="color:#f87171">⚠️ ${data.error || 'Could not generate plan'}</span>`;
+        result.classList.add('visible');
+      } catch (e) {
+        loading.classList.remove('active');
+        result.innerHTML = '<span style="color:#f87171">⚠️ Connection error. Please try again.</span>';
+        result.classList.add('visible');
+      }
+    }
   </script>
-  <script src="{% static 'workout/javascript/bootstrap.min.js' %}"></script>
-  <script src="{% static 'workout/javascript/jquery.cookie.js' %}">
-  </script>
-  <!-- <script src="{% static 'workout/javascript/Chart.min.js' %}"></script> -->
-  <script src="{% static 'workout/javascript/front.js' %}"></script>
-  <script src="{% static 'workout/javascript/exercise.js' %}"></script>
 </body>
 
 </html>

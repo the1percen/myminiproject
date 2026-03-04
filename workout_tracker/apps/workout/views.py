@@ -5,15 +5,15 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 import json
+import logging
 from dotenv import load_dotenv
 import os
-from django.contrib import admin
-from .models import User, Workout, Exercise
 from decouple import config
-import google.generativeai as genai
+from google import genai
 
 load_dotenv()
-genai.configure(api_key=config("GEMINI_API_KEY"))
+logger = logging.getLogger(__name__)
+client = genai.Client(api_key=config("GEMINI_API_KEY"))
 
 
 def login(request):
@@ -28,7 +28,7 @@ def login(request):
         try:
             # If errors, reload login page with errors:
             if len(validated["errors"]) > 0:
-                print("User could not be logged in.")
+                logger.info("User could not be logged in.")
                 # Loop through errors and Generate Django Message for each with custom level and tag:
                 for error in validated["errors"]:
                     messages.error(request, error, extra_tags='login')
@@ -36,7 +36,7 @@ def login(request):
                 return redirect("/")
         except KeyError:
             # If validation successful, set session, and load dashboard based on user level:
-            print("User passed validation and is logged in.")
+            logger.info("User passed validation and is logged in.")
 
             # Set session to validated User:
             request.session["user_id"] = validated["logged_in_user"].id
@@ -56,7 +56,7 @@ def register(request):
         # If errors, reload register page with errors:
         try:
             if len(validated["errors"]) > 0:
-                print("User could not be registered.")
+                logger.info("User could not be registered.")
                 # Loop through errors and Generate Django Message for each with custom level and tag:
                 for error in validated["errors"]:
                     messages.error(request, error, extra_tags='registration')
@@ -64,7 +64,7 @@ def register(request):
                 return redirect("/user/register/")
         except KeyError:
             # If validation successful, set session and load dashboard based on user level:
-            print("User passed validation and has been created.")
+            logger.info("User passed validation and has been created.")
             # Set session to validated User:
             request.session["user_id"] = validated["logged_in_user"].id
             # Load Dashboard:
@@ -95,10 +95,18 @@ def dashboard(request):
         # Get recent workouts for logged in user:
         recent_workouts = Workout.objects.filter(user__id=user.id).order_by('-id')[:4]
 
+        # Get workout stats
+        total_workouts = Workout.objects.filter(user__id=user.id).count()
+        completed_workouts = Workout.objects.filter(user__id=user.id, completed=True).count()
+        total_exercises = Exercise.objects.filter(workout__user__id=user.id).count()
+
         # Gather any page data:
         data = {
             'user': user,
             'recent_workouts': recent_workouts,
+            'total_workouts': total_workouts,
+            'completed_workouts': completed_workouts,
+            'total_exercises': total_exercises,
         }
 
         # Load dashboard with data:
@@ -139,7 +147,7 @@ def new_workout(request):
             # If errors, reload register page with errors:
             try:
                 if len(validated["errors"]) > 0:
-                    print("Workout could not be created.")
+                    logger.info("Workout could not be created.")
                     # Loop through errors and Generate Django Message for each with custom level and tag:
                     for error in validated["errors"]:
                         messages.error(request, error, extra_tags='workout')
@@ -147,7 +155,7 @@ def new_workout(request):
                     return redirect("/workout")
             except KeyError:
                 # If validation successful, load newly created workout page:
-                print("Workout passed validation and has been created.")
+                logger.info("Workout passed validation and has been created.")
 
                 id = str(validated['workout'].id)
                 # Load workout:
@@ -237,14 +245,14 @@ def exercise(request, id):
                 "workout": Workout.objects.get(id=id),
             }
 
-            print(exercise)
+            logger.info(exercise)
             # Begin validation of a new exercise:
             validated = Exercise.objects.new(**exercise)
 
             # If errors, reload register page with errors:
             try:
                 if len(validated["errors"]) > 0:
-                    print("Exercise could not be created.")
+                    logger.info("Exercise could not be created.")
 
                     # Loop through errors and Generate Django Message for each with custom level and tag:
                     for error in validated["errors"]:
@@ -254,7 +262,7 @@ def exercise(request, id):
                     return redirect("/workout/" + id)
             except KeyError:
                 # If validation successful, load newly created workout page:
-                print("Exercise passed validation and has been created.")
+                logger.info("Exercise passed validation and has been created.")
 
                 # Reload workout:
                 return redirect('/workout/' + id)
@@ -297,7 +305,7 @@ def edit_workout(request, id):
             # If errors, reload register page with errors:
             try:
                 if len(validated["errors"]) > 0:
-                    print("Workout could not be edited.")
+                    logger.info("Workout could not be edited.")
                     # Loop through errors and Generate Django Message for each with custom level and tag:
                     for error in validated["errors"]:
                         messages.error(request, error, extra_tags='edit')
@@ -305,7 +313,7 @@ def edit_workout(request, id):
                     return redirect("/workout/" + str(data['workout'].id) + "/edit")
             except KeyError:
                 # If validation successful, load newly created workout page:
-                print("Edited workout passed validation and has been updated.")
+                logger.info("Edited workout passed validation and has been updated.")
 
                 # Load workout:
                 return redirect("/workout/" + str(data['workout'].id))
@@ -316,21 +324,22 @@ def edit_workout(request, id):
         return redirect("/")
 
 def delete_workout(request, id):
-    """Delete a workout."""
+    """Delete a workout (POST only)."""
 
     try:
         # Check for valid session:
         user = User.objects.get(id=request.session["user_id"])
 
-        # Delete workout:
-        Workout.objects.get(id=id).delete()
+        if request.method == "POST":
+            # Delete workout:
+            Workout.objects.get(id=id).delete()
+            messages.success(request, "Workout deleted successfully.")
+            return redirect('/dashboard/')
 
-        # Load dashboard:
-        return redirect('/dashboard')
-
+        # If GET, redirect back to workout
+        return redirect(f'/workout/{id}/')
 
     except (KeyError, User.DoesNotExist) as err:
-        # If existing session not found:
         messages.info(request, "You must be logged in to view this page.", extra_tags="invalid_session")
         return redirect("/")
 
@@ -353,7 +362,7 @@ def complete_workout(request, id):
             workout.completed = True
             workout.save()
 
-            print("Workout completed.")
+            logger.info("Workout completed.")
 
             # Return to workout:
             return redirect('/workout/' + id)
@@ -368,7 +377,55 @@ def tos(request):
 
     return render(request, "workout/legal/tos.html")
 
-@csrf_exempt
+def profile(request):
+    """View and update user profile."""
+    try:
+        user = User.objects.get(id=request.session["user_id"])
+
+        if request.method == "POST":
+            # Update username
+            new_username = request.POST.get("username", "").strip()
+            new_email = request.POST.get("email", "").strip()
+
+            errors = []
+            if len(new_username) < 2:
+                errors.append("Username must be at least 2 characters.")
+            if len(new_email) < 5:
+                errors.append("Email must be at least 5 characters.")
+
+            # Check if username taken by another user
+            existing = User.objects.filter(username=new_username).exclude(id=user.id)
+            if existing.exists():
+                errors.append("Username is already taken.")
+
+            if errors:
+                for error in errors:
+                    messages.error(request, error, extra_tags='profile')
+                return redirect("/profile/")
+
+            user.username = new_username
+            user.email = new_email
+
+            # Handle profile picture upload
+            if 'profile_picture' in request.FILES:
+                user.profile_picture = request.FILES['profile_picture']
+
+            user.save()
+            messages.success(request, "Profile updated successfully!", extra_tags='profile')
+            return redirect("/profile/")
+
+        # GET request
+        data = {
+            'user': user,
+            'total_workouts': Workout.objects.filter(user__id=user.id).count(),
+            'completed_workouts': Workout.objects.filter(user__id=user.id, completed=True).count(),
+            'total_exercises': Exercise.objects.filter(workout__user__id=user.id).count(),
+        }
+        return render(request, "workout/profile.html", data)
+
+    except (KeyError, User.DoesNotExist):
+        messages.info(request, "You must be logged in to view this page.", extra_tags="invalid_session")
+        return redirect("/")
 
 @csrf_exempt
 def chatbot(request):
@@ -377,12 +434,19 @@ def chatbot(request):
             data = json.loads(request.body)
             user_message = data.get("message", "")
 
-            # Create Gemini model
-            model = genai.GenerativeModel("gemini-2.0-flash")
+            # Generate AI response with fitness-focused system prompt
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=(
+                    f"You are an expert fitness and workout assistant chatbot named FitBot. "
+                    f"You help users with workout plans, exercise form tips, nutrition advice, "
+                    f"recovery strategies, and motivation. Be friendly, encouraging, and professional. "
+                    f"Use emojis sparingly to keep it engaging. Keep responses concise but helpful. "
+                    f"If asked about medical conditions, recommend consulting a doctor. "
+                    f"\n\nUser message: {user_message}"
+                ),
+            )
 
-            # Generate AI response
-            response = model.generate_content(f"You are a helpful fitness chatbot. {user_message}")
-            
             bot_reply = response.text.strip()
             return JsonResponse({"reply": bot_reply})
 
@@ -391,19 +455,86 @@ def chatbot(request):
 
     return render(request, "workout/chatbot.html")
 
-class WorkoutAdmin(admin.ModelAdmin):
-    list_display = ('name', 'user', 'completed', 'created_at', 'ai_status')
-    readonly_fields = ('ai_advice', 'ai_plan')
-    actions = ['generate_ai_for_selected']
+@csrf_exempt
+def ai_advice(request, id):
+    """Generate AI advice for a workout."""
+    try:
+        user = User.objects.get(id=request.session["user_id"])
+        workout_obj = Workout.objects.get(id=id)
 
-    def ai_status(self, obj):
-        return "✅ Yes" if obj.ai_advice else "❌ No"
-    ai_status.short_description = "AI Advice Generated"
+        if request.method == "POST":
+            exercises = Exercise.objects.filter(workout__id=id)
+            exercise_list = ", ".join([f"{e.name} ({e.weight}lbs x {e.repetitions} reps)" for e in exercises])
 
-    def generate_ai_for_selected(self, request, queryset):
-        """Custom admin action: generate AI advice and plans"""
-        for workout in queryset:
-            workout.generate_ai_advice()
-            workout.generate_ai_plan()
-        self.message_user(request, "AI advice and plans generated successfully ✅")
-    generate_ai_for_selected.short_description = "Generate AI Advice & Plan for selected workouts"
+            prompt = (
+                f"You are an expert fitness trainer. Analyze this workout and provide advice:\n"
+                f"Workout: {workout_obj.name}\n"
+                f"Description: {workout_obj.description}\n"
+                f"Exercises: {exercise_list if exercise_list else 'No exercises added yet'}\n\n"
+                f"Provide:\n"
+                f"1. Overall assessment of the workout\n"
+                f"2. Tips for improvement\n"
+                f"3. Safety considerations\n"
+                f"4. Suggested complementary exercises\n"
+                f"Keep it concise and actionable."
+            )
+
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=prompt,
+            )
+            advice = response.text.strip()
+
+            # Save to workout
+            workout_obj.ai_advice = advice
+            workout_obj.save()
+
+            return JsonResponse({"advice": advice})
+
+        return JsonResponse({"error": "POST required"}, status=405)
+
+    except (KeyError, User.DoesNotExist):
+        return JsonResponse({"error": "Authentication required"}, status=401)
+    except Workout.DoesNotExist:
+        return JsonResponse({"error": "Workout not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)
+
+@csrf_exempt
+def ai_plan(request, id):
+    """Generate AI workout plan."""
+    try:
+        user = User.objects.get(id=request.session["user_id"])
+        workout_obj = Workout.objects.get(id=id)
+
+        if request.method == "POST":
+            prompt = (
+                f"You are a certified personal trainer. Create a detailed 3-day workout plan based on:\n"
+                f"Workout focus: {workout_obj.name}\n"
+                f"Description: {workout_obj.description}\n\n"
+                f"Format each day with:\n"
+                f"- Day title and focus area\n"
+                f"- 5-6 exercises with sets, reps, and rest periods\n"
+                f"- Warm-up and cool-down suggestions\n"
+                f"Keep it practical and progressive."
+            )
+
+            response = client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=prompt,
+            )
+            plan = response.text.strip()
+
+            workout_obj.ai_plan = plan
+            workout_obj.save()
+
+            return JsonResponse({"plan": plan})
+
+        return JsonResponse({"error": "POST required"}, status=405)
+
+    except (KeyError, User.DoesNotExist):
+        return JsonResponse({"error": "Authentication required"}, status=401)
+    except Workout.DoesNotExist:
+        return JsonResponse({"error": "Workout not found"}, status=404)
+    except Exception as e:
+        return JsonResponse({"error": str(e)}, status=500)

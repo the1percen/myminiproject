@@ -1,144 +1,305 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>FitnessTracker</title>
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="all,follow">
-    <!-- Load Access to Django Static Files -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FitnessTracker - Dashboard</title>
     {% load static %}
-    <!-- Fav Icon -->
-    <!--[if IE]><link rel="shortcut icon" href="{% static 'workout/images/fav.png' }"><![endif]-->
     <link rel="icon" href="{% static 'workout/images/fav.png' %}">
-    <!-- Bootstrap CSS-->
-    <link rel="stylesheet" href="{% static 'workout/css/bootstrap.min.css' %}">
-    <!-- Font Awesome CSS-->
-    <link rel="stylesheet" href="{% static 'workout/css/font-awesome.min.css' %}">
-    <!-- Custom Font Icons CSS-->
-    <link rel="stylesheet" href="{% static 'workout/css/font.css' %}">
-    <!-- Google fonts - Muli-->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Muli:300,400,700">
-    <!-- theme stylesheet-->
-    <link rel="stylesheet" href="{% static 'workout/css/style.red.css' %}" id="theme-stylesheet">
-    <!-- Custom stylesheet - for your changes-->
-    <link rel="stylesheet" href="{% static 'workout/css/custom.css' %}">
-    <!-- Tweaks for older IEs-->
-    <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]-->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'workout/css/theme.css' %}">
+    <style>
+        .ai-banner {
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.12), rgba(118, 75, 162, 0.08));
+            border: 1px solid rgba(102, 126, 234, 0.2);
+            border-radius: 16px;
+            padding: 24px 28px;
+            margin-bottom: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .ai-banner-info {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .ai-banner-icon {
+            width: 50px;
+            height: 50px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+            flex-shrink: 0;
+        }
+
+        .ai-banner h3 {
+            font-size: 17px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 4px;
+        }
+
+        .ai-banner p {
+            font-size: 13px;
+            color: #777;
+            margin: 0;
+        }
+
+        .workout-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 16px;
+        }
+
+        .workout-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: 14px;
+            padding: 20px;
+            transition: all 0.2s;
+            cursor: pointer;
+            text-decoration: none !important;
+            display: block;
+        }
+
+        .workout-card:hover {
+            border-color: rgba(102, 126, 234, 0.3);
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+
+        .workout-card-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 10px;
+        }
+
+        .workout-card h3 {
+            font-size: 16px;
+            font-weight: 700;
+            color: #fff;
+            margin: 0 0 4px;
+            line-height: 1.3;
+        }
+
+        .workout-card .wc-date {
+            font-size: 12px;
+            color: #555;
+        }
+
+        .workout-card .wc-desc {
+            font-size: 13px;
+            color: #777;
+            margin: 10px 0;
+            line-height: 1.5;
+            min-height: 20px;
+        }
+
+        .workout-card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 12px;
+            border-top: 1px solid rgba(255, 255, 255, 0.05);
+            margin-top: 4px;
+        }
+
+        .workout-card-footer .view-link {
+            font-size: 13px;
+            color: #667eea;
+            font-weight: 600;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .workout-card-footer .view-link:hover {
+            color: #a78bfa;
+        }
+
+        .wc-time {
+            font-size: 11px;
+            color: #444;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 60px 20px;
+        }
+
+        .empty-icon {
+            font-size: 56px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state h3 {
+            font-size: 22px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 8px;
+        }
+
+        .empty-state p {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 24px;
+        }
+    </style>
 </head>
 
 <body>
-    <header class="header">
-        <nav class="navbar navbar-expand-lg">
-            <div class="search-panel">
-                <div class="search-inner d-flex align-items-center justify-content-center">
-                    <div class="close-btn">Close <i class="fa fa-close"></i></div>
-                    <form id="searchForm" action="#">
-                        <div class="form-group">
-                            <input type="search" name="search" placeholder="What are you searching for...">
-                            <button type="submit" class="submit">Search</button>
-                        </div>
-                    </form>
+    <div class="app-shell">
+        <!-- Sidebar -->
+        <aside class="app-sidebar">
+            <div class="sidebar-brand">
+                <div class="brand-icon">🏋️</div>
+                <div>
+                    <div class="brand-text-main">FitnessTracker</div>
+                    <div class="brand-text-sub">AI Workout Platform</div>
                 </div>
             </div>
-            <div class="container-fluid d-flex align-items-center justify-content-between ">
-                <div class="navbar-header">
-                    <a href="/dashboard" class="navbar-brand">
-                        <div class="brand-text brand-big visible text-uppercase"><strong class="text-primary">Fitness</strong><strong>Tracker</strong></div>
-                        <div class="brand-text brand-sm"><strong class="text-primary">F</strong><strong>T</strong></div>
+            <a href="/profile/" class="sidebar-user" style="text-decoration:none; cursor:pointer; transition: all 0.2s;"
+                title="Edit Profile">
+                {% if user.profile_picture %}
+                <div class="user-avatar" style="overflow:hidden; padding:0;">
+                    <img src="{{ user.profile_picture.url }}"
+                        style="width:100%;height:100%;object-fit:cover;border-radius:50%;">
+                </div>
+                {% else %}
+                <div class="user-avatar">{{ user.username|slice:":1"|upper }}</div>
+                {% endif %}
+                <div>
+                    <div class="user-name">{{ user.username }}</div>
+                    <div class="user-level">⭐ {{ user.level_name }}</div>
+                </div>
+            </a>
+            <div class="sidebar-nav">
+                <div class="nav-section-label">Main</div>
+                <a href="/dashboard/" class="nav-link-item active"><i class="fas fa-home"></i> Dashboard</a>
+                <a href="/workout/" class="nav-link-item"><i class="fas fa-plus-circle"></i> New Workout</a>
+                <a href="/workouts/" class="nav-link-item"><i class="fas fa-dumbbell"></i> All Workouts</a>
+                <div class="nav-section-label" style="margin-top:12px">AI Tools</div>
+                <a href="/chatbot/" class="nav-link-item"><i class="fas fa-robot"></i> FitBot AI</a>
+                <div class="nav-section-label" style="margin-top:12px">Account</div>
+                <a href="/profile/" class="nav-link-item"><i class="fas fa-user-circle"></i> My Profile</a>
+            </div>
+            <div class="sidebar-footer">
+                <a href="/user/logout/" class="logout-btn"><i class="fas fa-sign-out-alt"></i> Logout</a>
+            </div>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="app-content">
+            <div class="app-topbar">
+                <div>
+                    <div class="page-title">Dashboard</div>
+                    <div class="page-subtitle">Welcome back, {{ user.username }}! 💪</div>
+                </div>
+                <div class="topbar-actions">
+                    <a href="/workout/" class="btn-grad"><i class="fas fa-plus"></i> New Workout</a>
+                </div>
+            </div>
+
+            <div class="content-area">
+                <!-- Stats -->
+                <div class="stat-grid">
+                    <div class="stat-card stat-purple">
+                        <div class="stat-icon">🏋️</div>
+                        <div class="stat-value">{{ total_workouts|default:"0" }}</div>
+                        <div class="stat-label">Total Workouts</div>
+                    </div>
+                    <div class="stat-card stat-pink">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-value">{{ completed_workouts|default:"0" }}</div>
+                        <div class="stat-label">Completed</div>
+                    </div>
+                    <div class="stat-card stat-blue">
+                        <div class="stat-icon">💪</div>
+                        <div class="stat-value">{{ total_exercises|default:"0" }}</div>
+                        <div class="stat-label">Exercises Logged</div>
+                    </div>
+                    <div class="stat-card stat-orange">
+                        <div class="stat-icon">⭐</div>
+                        <div class="stat-value">{{ user.level }}</div>
+                        <div class="stat-label">Current Level</div>
+                    </div>
+                </div>
+
+                <!-- AI Banner -->
+                <div class="ai-banner">
+                    <div class="ai-banner-info">
+                        <div class="ai-banner-icon">🤖</div>
+                        <div>
+                            <h3>FitBot AI Assistant</h3>
+                            <p>Get personalized workout plans, nutrition tips, form advice — powered by Gemini AI</p>
+                        </div>
+                    </div>
+                    <a href="/chatbot/" class="btn-grad" style="white-space:nowrap">
+                        <i class="fas fa-comments"></i> Chat Now
                     </a>
-                    <button class="sidebar-toggle"><i class="fa fa-long-arrow-left"></i></button>
                 </div>
-                <ul class="right-menu list-inline no-margin-bottom">
-                    <li class="list-inline-item"><a href="#" class="search-open nav-link"><i class="icon-magnifying-glass-browser"></i></a></li>
-                    <li class="list-inline-item logout"><a id="logout" href="/user/logout" class="nav-link">Logout <i class="icon-logout"></i></a></li>
-                </ul>
-            </div>
-        </nav>
-    </header>
-    <div class="d-flex align-items-stretch ">
-        <nav id="sidebar">
-            <div class="sidebar-header d-flex align-items-center ">
-              <img src="{% static "workout/images/badges/" %}badge_{{user.level}}.png" alt="..." class="img-fluid rounded-circle avatar">
-                <!-- <div class="avatar"><img src="{% static 'workout/images/dumbbell.png' %}" alt="..." class="img-fluid rounded-circle"></div> -->
-                <div class="title">
-                    <h1 class="h5">{{user.username}}</h1>
-                    <p>{{user.level_name}}</p>
+
+                <!-- Recent Workouts -->
+                <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:18px;">
+                    <h2 style="font-size:18px; font-weight:700; color:#fff;">Recent Workouts</h2>
+                    <a href="/workouts/" class="btn-outline btn-sm">View All <i class="fas fa-arrow-right"></i></a>
                 </div>
-            </div><span class="heading">Menu</span>
-            <ul class="list-unstyled">
-                <li class="active"><a href="/dashboard"><i class="icon-home"></i>Home</a></li>
-                <li><a href="/workout"><i class="fa fa-plus-square"></i>Workout</a></li>
-                <li><a href="/workouts"><i class="fa fa-th-list"></i>View All </a></li>
-            </ul>
-        </nav>
-        <div class="page-content mb-5">
-            <div class="page-header">
-                <div class="container-fluid">
-                    <h2 class="h5 no-margin-bottom">Dashboard</h2>
-                </div>
-            </div>
-            <section class="no-padding-bottom">
-                <div class="container-fluid mb-4">
-                    <div class="row">
-                      <!-- Perform django if check here for recent_workouts-->
-                      {% if recent_workouts %}
-                        <!-- If so, repeat cards here: -->
-                        {% for workout in recent_workouts %}
-                        <div class="col-lg-12 pb-4">
-                              <div class="card text-white bg-dark mb-2">
-                                  <div class="card-body">
-                                      <h4 class="card-title">{{workout.name}}</h4>
-                                      <h6 class="card-subtitle mb-2 text-muted">{{workout.created_at | date }}</h6>
-                                      <p class="card-text">{{workout.description}}
-                                      </p>
-                                      <a href="/workout/{{workout.id}}" class="card-link">View</a>
-                                      <p class="card-text">
-                                        <small class="text-muted">Updated {{workout.updated_at | timesince}} ago</small>
-                                      </p>
-                                  </div>
-                              </div>
+
+                {% if recent_workouts %}
+                <div class="workout-grid">
+                    {% for workout in recent_workouts %}
+                    <a href="/workout/{{ workout.id }}/" class="workout-card">
+                        <div class="workout-card-top">
+                            <div>
+                                <h3>{{ workout.name }}</h3>
+                                <div class="wc-date"><i class="fas fa-calendar"
+                                        style="margin-right:4px;color:#555"></i>{{ workout.created_at|date:"M d, Y" }}
+                                </div>
+                            </div>
+                            {% if workout.completed %}
+                            <span class="badge-completed">✅ Done</span>
+                            {% else %}
+                            <span class="badge-active">🔄 Active</span>
+                            {% endif %}
                         </div>
-                        {% endfor %}
-                        <p class="text-white text-muted ml-3 mr-3 block"><i class="fa fa-info-circle"></i> <em>Most recent 4 workouts displayed only. <a href="/workouts" class="card-link">View All</a></em></p>
-                        {% else %}
-                        <div class="col-lg-12 pb-4">
-                          <div class="card text-white bg-dark mb-4">
-                              <div class="card-body">
-                                  <h4 class="card-title">You don't have any workouts yet.</h4>
-                                  <h6 class="card-subtitle mb-2 text-muted">There's no time like the present! 💪</h6>
-                                  <p class="card-text">{{workout.description}}
-                                  </p>
-                                  <a href="/workout" class="card-link">Start a Workout</a>
-                              </div>
-                          </div>
+                        <div class="wc-desc">{{ workout.description|default:"No description" }}</div>
+                        <div class="workout-card-footer">
+                            <span class="view-link">View Workout <i class="fas fa-arrow-right"></i></span>
+                            <span class="wc-time">{{ workout.updated_at|timesince }} ago</span>
                         </div>
-                        {% endif %}
-                    </div>
+                    </a>
+                    {% endfor %}
                 </div>
-            </section>
-            <footer class="footer fixed-bottom no-margin-bottom">
-                <div class="footer__block block no-margin-bottom">
-                    <div class="container-fluid text-center">
-                        <p class="no-margin-bottom">2021 &copy; <a href="https://timknab.dev" target="_blank" class="sasquatch-footer-link">timknab.dev</a></p>
-                    </div>
+                <p style="font-size:12px; color:#444; margin-top:14px; text-align:center;">
+                    Showing 4 most recent · <a href="/workouts/" style="color:#667eea;">View all workouts</a>
+                </p>
+                {% else %}
+                <div class="empty-state">
+                    <div class="empty-icon">🏋️</div>
+                    <h3>No workouts yet!</h3>
+                    <p>Start your fitness journey by creating your first workout.</p>
+                    <a href="/workout/" class="btn-grad" style="font-size:15px; padding:13px 28px;">
+                        <i class="fas fa-plus"></i> Create First Workout
+                    </a>
                 </div>
-            </footer>
-        </div>
+                {% endif %}
+            </div>
+
+            <div class="app-footer">2025 © FitnessTracker — AI-Powered Workout Management</div>
+        </main>
     </div>
-    <!-- Javascript files-->
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js">
-    </script>
-    <script src="{% static 'workout/javascript/bootstrap.min.js' %}"></script>
-    <script src="{% static 'workout/javascript/jquery.cookie.js' %}">
-    </script>
-    <!-- <script src="{% static 'workout/javascript/Chart.min.js' %}"></script> -->
-    <script src="{% static 'workout/javascript/front.js' %}"></script>
 </body>
 
 </html>

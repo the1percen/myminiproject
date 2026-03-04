@@ -1,110 +1,449 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 
 <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <title>FitnessTracker</title>
-    <meta name="description" content="">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="robots" content="all,follow">
-    <!-- Load Access to Django Static Files -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="FitnessTracker - AI-powered workout tracking and planning">
+    <title>FitnessTracker - Login</title>
     {% load static %}
-    <!-- Fav Icon -->
-    <!--[if IE]><link rel="shortcut icon" href="{% static 'workout/images/fav.png' }"><![endif]-->
     <link rel="icon" href="{% static 'workout/images/fav.png' %}">
-    <!-- Bootstrap CSS-->
-    <link rel="stylesheet" href="{% static 'workout/css/bootstrap.min.css' %}">
-    <!-- Font Awesome CSS-->
-    <link rel="stylesheet" href="{% static 'workout/css/font-awesome.min.css' %}">
-    <!-- Custom Font Icons CSS-->
-    <link rel="stylesheet" href="{% static 'workout/css/font.css' %}">
-    <!-- Google fonts - Muli-->
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Muli:300,400,700">
-    <!-- theme stylesheet-->
-    <link rel="stylesheet" href="{% static 'workout/css/style.red.css' %}" id="theme-stylesheet">
-    <!-- Custom stylesheet - for your changes-->
-    <link rel="stylesheet" href="{% static 'workout/css/custom.css' %}">
-    <!-- Tweaks for older IEs-->
-    <!--[if lt IE 9]>
-        <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
-        <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]-->
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: #070710;
+            color: #e0e0e0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* Animated background */
+        .bg-orbs {
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.15;
+            animation: orbFloat 8s ease-in-out infinite;
+        }
+
+        .orb-1 {
+            width: 500px;
+            height: 500px;
+            background: #667eea;
+            top: -100px;
+            left: -100px;
+            animation-delay: 0s;
+        }
+
+        .orb-2 {
+            width: 400px;
+            height: 400px;
+            background: #764ba2;
+            bottom: -100px;
+            right: -100px;
+            animation-delay: 3s;
+        }
+
+        .orb-3 {
+            width: 300px;
+            height: 300px;
+            background: #f093fb;
+            top: 50%;
+            left: 50%;
+            animation-delay: 6s;
+        }
+
+        @keyframes orbFloat {
+
+            0%,
+            100% {
+                transform: translate(0, 0) scale(1);
+            }
+
+            33% {
+                transform: translate(30px, -30px) scale(1.05);
+            }
+
+            66% {
+                transform: translate(-20px, 20px) scale(0.95);
+            }
+        }
+
+        .page-wrapper {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            width: 100%;
+            min-height: 100vh;
+        }
+
+        /* Left brand panel */
+        .brand-panel {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px;
+            text-align: center;
+        }
+
+        .brand-logo {
+            width: 80px;
+            height: 80px;
+            border-radius: 24px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 38px;
+            margin-bottom: 28px;
+            box-shadow: 0 8px 40px rgba(102, 126, 234, 0.4);
+        }
+
+        .brand-panel h1 {
+            font-size: 48px;
+            font-weight: 800;
+            background: linear-gradient(135deg, #fff 0%, #a78bfa 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            line-height: 1.1;
+            margin-bottom: 16px;
+        }
+
+        .brand-panel p {
+            font-size: 18px;
+            color: #666;
+            line-height: 1.6;
+            max-width: 340px;
+        }
+
+        .feature-list {
+            margin-top: 40px;
+            text-align: left;
+            width: 100%;
+            max-width: 320px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            font-size: 14px;
+            color: #888;
+        }
+
+        .feature-item:last-child {
+            border-bottom: none;
+        }
+
+        .feature-item .fi-icon {
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            background: rgba(102, 126, 234, 0.12);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 16px;
+            flex-shrink: 0;
+        }
+
+        .feature-item span {
+            color: #ccc;
+            font-weight: 500;
+        }
+
+        /* Right form panel */
+        .form-panel {
+            width: 480px;
+            min-height: 100vh;
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 1px solid rgba(255, 255, 255, 0.06);
+            backdrop-filter: blur(20px);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 60px 48px;
+        }
+
+        .form-panel h2 {
+            font-size: 28px;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 6px;
+        }
+
+        .form-panel .subtitle {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 36px;
+        }
+
+        .alert-box {
+            width: 100%;
+            padding: 12px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .alert-danger {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+        }
+
+        .alert-success {
+            background: rgba(74, 222, 128, 0.1);
+            border: 1px solid rgba(74, 222, 128, 0.2);
+            color: #86efac;
+        }
+
+        .alert-info {
+            background: rgba(96, 165, 250, 0.1);
+            border: 1px solid rgba(96, 165, 250, 0.2);
+            color: #93c5fd;
+        }
+
+        .form-group {
+            width: 100%;
+            margin-bottom: 16px;
+            position: relative;
+        }
+
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #666;
+            margin-bottom: 8px;
+        }
+
+        .form-group .input-icon {
+            position: absolute;
+            left: 16px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #555;
+            font-size: 15px;
+            pointer-events: none;
+        }
+
+        .form-group input[type="text"],
+        .form-group input[type="password"],
+        .form-group input[type="email"] {
+            width: 100%;
+            padding: 14px 16px 14px 44px;
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 12px;
+            color: #e0e0e0;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            outline: none;
+            transition: all 0.2s;
+        }
+
+        .form-group input:focus {
+            border-color: rgba(102, 126, 234, 0.5);
+            background: rgba(102, 126, 234, 0.05);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-group input::placeholder {
+            color: #444;
+        }
+
+        .btn-primary-grad {
+            width: 100%;
+            padding: 15px;
+            border: none;
+            border-radius: 12px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            font-family: 'Inter', sans-serif;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: 8px;
+            letter-spacing: 0.3px;
+        }
+
+        .btn-primary-grad:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary-grad:active {
+            transform: translateY(0);
+        }
+
+        .divider {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin: 24px 0;
+            width: 100%;
+            color: #444;
+            font-size: 12px;
+        }
+
+        .divider::before,
+        .divider::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: rgba(255, 255, 255, 0.06);
+        }
+
+        .signup-link {
+            text-align: center;
+            font-size: 14px;
+            color: #555;
+            margin-top: 20px;
+        }
+
+        .signup-link a {
+            color: #667eea;
+            font-weight: 600;
+            text-decoration: none;
+            transition: color 0.2s;
+        }
+
+        .signup-link a:hover {
+            color: #a78bfa;
+        }
+
+        @media (max-width: 768px) {
+            .brand-panel {
+                display: none;
+            }
+
+            .form-panel {
+                width: 100%;
+                border-left: none;
+                padding: 40px 24px;
+            }
+        }
+    </style>
 </head>
 
 <body>
-    <div class="login-page">
-        <div class="container d-flex align-items-center">
-            <div class="form-holder has-shadow">
-                <div class="row">
-                    <!-- Logo & Information Panel-->
-                    <div class="col-lg-6">
-                        <div class="info d-flex align-items-center">
-                            <div class="content">
-                                <div class="logo">
-                                    <h1 class="display-3">FitnessTracker</h1>
-                                </div>
-                                <p class="display-3-intro-subtext">Track your workouts better.</p>
-                            </div>
-                        </div>
-                    </div>
-                    <!-- Form Panel    -->
-                    <div class="col-lg-6 bg-white">
-                        <div class="form d-flex align-items-center">
-                            <div class="content">
-                                <!-- Info Messages -->
-                                {% if messages %} {% for message in messages %} {% if message.tags == "invalid_session info" %}
-                                <div class="alert alert-info alert-dismissable" role="alert">
-                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                    <strong>Attention!</strong> {{ message }}
-                                </div>
-                                {% endif %} {% endfor %} {% endif %}
-                                <!-- Logout Message -->
-                                {% if messages %} {% for message in messages %} {% if message.tags == "logout success" %}
-                                <div class="alert alert-success alert-dismissable" role="alert">
-                                    <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                    <strong>Success!</strong> {{ message }}
-                                </div>
-                                {% endif %} {% endfor %} {% endif %}
-                                <!-- Login Form -->
-                                <form id="login-form" action="/user/login" method="POST">
-                                    <!-- Django CSRF Token -->
-                                    {% csrf_token %}
-                                    <!-- Login Error Messages -->
-                                    {% if messages %} {% for message in messages %} {% if message.tags == "login error" %}
-                                    <div class="alert alert-danger alert-dismissable" role="alert">
-                                        <a href="#" class="close" data-dismiss="alert" aria-label="close">&times;</a>
-                                        <strong>Error!</strong> {{ message }}
-                                    </div>
-                                    {% endif %} {% endfor %} {% endif %}
-                                    <!-- Username -->
-                                    <div class="form-group">
-                                        <input id="username" type="text" name="username" required class="input-material form-control-lg less-dark" placeholder="Username">
-                                    </div>
-                                    <!-- Password -->
-                                    <div class="form-group">
-                                        <input id="password" type="password" name="password" required class="input-material form-control-lg less-dark" placeholder="Password">
-                                    </div>
-                                    <!-- Login Button -->
-                                    <input id="login" type="submit" value="Login" class="btn btn-primary btn-lg">
-                                </form>
-                                <br>
-                                <small>Don't have an account? <a href="/user/register" class="signup">Signup</a></small>
-                            </div>
-                        </div>
-                    </div>
+    <div class="bg-orbs">
+        <div class="orb orb-1"></div>
+        <div class="orb orb-2"></div>
+        <div class="orb orb-3"></div>
+    </div>
+
+    <div class="page-wrapper">
+        <!-- Brand Panel -->
+        <div class="brand-panel">
+            <div class="brand-logo">🏋️</div>
+            <h1>FitnessTracker</h1>
+            <p>Your AI-powered workout companion. Track, plan, and crush your fitness goals.</p>
+
+            <div class="feature-list">
+                <div class="feature-item">
+                    <div class="fi-icon">🤖</div>
+                    <div><span>FitBot AI</span><br>Get personalized AI workout advice</div>
+                </div>
+                <div class="feature-item">
+                    <div class="fi-icon">📊</div>
+                    <div><span>Progress Tracking</span><br>Monitor every set, rep and weight</div>
+                </div>
+                <div class="feature-item">
+                    <div class="fi-icon">📋</div>
+                    <div><span>Smart Plans</span><br>AI-generated 3-day workout plans</div>
+                </div>
+                <div class="feature-item">
+                    <div class="fi-icon">🏆</div>
+                    <div><span>Level System</span><br>Level up as you complete workouts</div>
                 </div>
             </div>
         </div>
+
+        <!-- Form Panel -->
+        <div class="form-panel">
+            <h2>Welcome back 👋</h2>
+            <p class="subtitle">Sign in to your FitnessTracker account</p>
+
+            {% if messages %}
+            {% for message in messages %}
+            {% if message.tags == "invalid_session info" %}
+            <div class="alert-box alert-info"><i class="fas fa-info-circle"></i> {{ message }}</div>
+            {% endif %}
+            {% if message.tags == "logout success" %}
+            <div class="alert-box alert-success"><i class="fas fa-check-circle"></i> {{ message }}</div>
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+
+            <form id="login-form" action="/user/login/" method="POST" style="width:100%">
+                {% csrf_token %}
+
+                {% if messages %}
+                {% for message in messages %}
+                {% if message.tags == "login error" %}
+                <div class="alert-box alert-danger"><i class="fas fa-exclamation-circle"></i> {{ message }}</div>
+                {% endif %}
+                {% endfor %}
+                {% endif %}
+
+                <div class="form-group">
+                    <label>Username</label>
+                    <i class="fas fa-user input-icon"></i>
+                    <input id="username" type="text" name="username" required placeholder="Enter your username">
+                </div>
+
+                <div class="form-group">
+                    <label>Password</label>
+                    <i class="fas fa-lock input-icon"></i>
+                    <input id="password" type="password" name="password" required placeholder="Enter your password">
+                </div>
+
+                <button id="login" type="submit" class="btn-primary-grad">
+                    <i class="fas fa-sign-in-alt" style="margin-right:8px"></i> Sign In
+                </button>
+            </form>
+
+            <div class="divider">or</div>
+
+            <div class="signup-link">
+                Don't have an account? <a href="/user/register/">Create one free</a>
+            </div>
+        </div>
     </div>
-    <!-- Javascript files-->
-    <script src="https://code.jquery.com/jquery-3.2.1.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.11.0/umd/popper.min.js">
-    </script>
-    <script src="{% static 'workout/javascript/bootstrap.min.js' %}"></script>
-    <script src="{% static 'workout/javascript/jquery.cookie.js' %}">
-    </script>
-    <!-- <script src="{% static 'workout/javascript/Chart.min.js' %}"></script> -->
-    <script src="{% static 'workout/javascript/front.js' %}"></script>
 </body>
 
 </html>

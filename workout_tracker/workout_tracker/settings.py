@@ -140,3 +140,8 @@ JAZZMIN_SETTINGS = {
         {"name": "Chatbot 🤖", "url": "/chatbot/", "new_window": False},
     ],
 }
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'

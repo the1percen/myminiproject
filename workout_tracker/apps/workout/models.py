@@ -2,8 +2,11 @@ from django.db import models
 import re # regex for email validation
 import bcrypt # bcrypt for password encryption/decryption
 from decimal import * # for decimal number purposes
+import logging
 from decouple import config
-import google.generativeai as genai
+from google import genai
+
+logger = logging.getLogger(__name__)
 
 
 class UserManager(models.Manager):
@@ -91,7 +94,8 @@ class UserManager(models.Manager):
         # Check for validation errors:
         # If none, hash password, create user and send new user back:
         if len(errors) == 0:
-            kwargs["password"][0] = bcrypt.hashpw((kwargs["password"][0]).encode(), bcrypt.gensalt(14))
+            hashed = bcrypt.hashpw((kwargs["password"][0]).encode(), bcrypt.gensalt(14))
+            kwargs["password"][0] = hashed.decode('utf-8') if isinstance(hashed, bytes) else hashed
             # Create new validated User:
             validated_user = {
                 "logged_in_user": User(username=kwargs["username"][0], email=kwargs["email"][0], password=kwargs["password"][0], tos_accept=kwargs["tos_accept"][0]),
@@ -414,10 +418,11 @@ class User(models.Model):
 
     username = models.CharField(max_length=20)
     email = models.CharField(max_length=50)
-    password = models.CharField(max_length=22)
+    password = models.CharField(max_length=255)
     tos_accept = models.BooleanField(default=False)
     level = models.IntegerField(default=1)
     level_name = models.CharField(max_length=15, default="Newbie")
+    profile_picture = models.ImageField(upload_to='profile_pics/', blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     objects = UserManager() # Adds additional instance methods to `User`
@@ -441,36 +446,33 @@ class Workout(models.Model):
     ai_plan = models.TextField(blank=True, null=True)
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    objects = WorkoutManager()
 
     def generate_ai_advice(self):
-        """Ask OpenAI for workout advice based on workout name/description"""
-        prompt = f"Give professional fitness advice for this workout: {self.name} - {self.description}"
+        """Ask Gemini for workout advice based on workout name/description"""
+        prompt = f"You are a professional fitness trainer. Give professional fitness advice for this workout: {self.name} - {self.description}. Keep the response concise and actionable in 3-5 bullet points."
         try:
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a professional fitness trainer."},
-                    {"role": "user", "content": prompt}
-                ]
+            ai_client = genai.Client(api_key=config("GEMINI_API_KEY"))
+            response = ai_client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=prompt,
             )
-            self.ai_advice = response["choices"][0]["message"]["content"]
+            self.ai_advice = response.text.strip()
             self.save()
             return self.ai_advice
         except Exception as e:
             return f"AI Error: {e}"
 
     def generate_ai_plan(self):
-        """Generate 3-day personalized workout plan"""
-        prompt = f"Create a 3-day workout plan for {self.name}. Focus on form and balance."
+        """Generate 3-day personalized workout plan using Gemini"""
+        prompt = f"You are a certified personal trainer. Create a 3-day workout plan for {self.name}. Focus on form and balance. Format as Day 1, Day 2, Day 3 with exercises, sets, and reps."
         try:
-            response = openai.ChatCompletion.create(
-                model="gpt-3.5-turbo",
-                messages=[
-                    {"role": "system", "content": "You are a certified personal trainer."},
-                    {"role": "user", "content": prompt}
-                ]
+            ai_client = genai.Client(api_key=config("GEMINI_API_KEY"))
+            response = ai_client.models.generate_content(
+                model="gemini-2.0-flash",
+                contents=prompt,
             )
-            self.ai_plan = response["choices"][0]["message"]["content"]
+            self.ai_plan = response.text.strip()
             self.save()
             return self.ai_plan
         except Exception as e:
